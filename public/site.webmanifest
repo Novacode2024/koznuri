@@ -1,0 +1,31 @@
+{
+  "name": "Ko'z Nuri - Eye Medical Center",
+  "short_name": "Ko'z Nuri",
+  "description": "O'zbekistondagi eng zamonaviy ko'z tibbiy xizmatlari",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#1857FE",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "lang": "uz"
+}
+

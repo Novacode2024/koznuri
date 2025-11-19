@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://koznuri.novacode.uz/sitemap.xml
+
+# Disallow private/admin pages
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /application/
+
+# Allow all public pages
+Allow: /
+Allow: /services
+Allow: /service/*
+Allow: /doctors
+Allow: /doctor/*
+Allow: /news
+Allow: /news/*
+Allow: /about
+Allow: /technologies
+Allow: /media
+Allow: /faq
+Allow: /location
+Allow: /reviews
+
+# Crawl-delay
+Crawl-delay: 1
+
