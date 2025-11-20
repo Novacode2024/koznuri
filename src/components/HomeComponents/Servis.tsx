@@ -5,6 +5,13 @@ import { usePopularServices } from '../../hooks/useServices';
 import LoadingSpinner from '../LoadingSpinner';
 import type { Service } from '../../services/servicesService';
 
+const truncateWords = (text: string, maxWords = 20): string => {
+  if (!text) return '';
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return words.join(' ');
+  return `${words.slice(0, maxWords).join(' ')}...`;
+};
+
 const Servis = () => {
   const { i18n, t } = useTranslation();
   const { data: services, isLoading, error } = usePopularServices();
@@ -129,7 +136,7 @@ const Servis = () => {
 
                   {/* Service Description */}
                   <p className="mb-4 flex-1 leading-relaxed text-sm md:text-[15px] transition-colors duration-300 text-[#747474] group-hover:text-white/90">
-                    {service.description}
+                    {truncateWords(service.description)}
                   </p>
                 </div>
 
@@ -177,7 +184,7 @@ const Servis = () => {
 
                     {/* Service Description */}
                     <p className="mb-4 flex-1 leading-relaxed text-sm md:text-[15px] transition-colors duration-300 text-[#747474] group-hover:text-white/90">
-                      {service.description}
+                      {truncateWords(service.description)}
                     </p>
                   </div>
 
