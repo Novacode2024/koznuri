@@ -61,8 +61,8 @@ const NavbarMenu = () => {
     { code: "ru", name: "Ru", flag: rus },
     { code: "en", name: "En", flag: en },
     { code: "kz", name: "Kz", flag: kaz },
-    { code: "tg", name: "Tg", flag: tj },
-    { code: "ky", name: "Ky", flag: krgiz },
+    { code: "tg", name: "Tj", flag: tj },
+    { code: "ky", name: "Kg", flag: krgiz },
   ];
 
   const dropdownRef = useRef<HTMLDivElement>(null);
