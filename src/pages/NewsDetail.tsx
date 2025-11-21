@@ -57,6 +57,41 @@ const NewsDetail = () => {
     fetchNewsDetail();
   }, [fetchNewsDetail]);
 
+  // Structured data for news article
+  const newsStructuredData = useMemo(() => {
+    if (!news) return null;
+    
+    const imageUrl = news.image.startsWith("http")
+      ? news.image
+      : `https://koznuri.novacode.uz${news.image}`;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": news.title_uz,
+      "description": news.description_uz.substring(0, 200),
+      "image": imageUrl,
+      "datePublished": news.date,
+      "dateModified": news.date,
+      "author": {
+        "@type": "Organization",
+        "name": "Ko'z Nuri - Eye Medical Center"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Ko'z Nuri - Eye Medical Center",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://koznuri.novacode.uz/logo.svg"
+        }
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://koznuri.novacode.uz/news/${news.uuid}`
+      }
+    };
+  }, [news]);
+
   if (loading) {
     return (
       <>
@@ -94,41 +129,6 @@ const NewsDetail = () => {
       </>
     );
   }
-
-  // Structured data for news article
-  const newsStructuredData = useMemo(() => {
-    if (!news) return null;
-    
-    const imageUrl = news.image.startsWith("http")
-      ? news.image
-      : `https://koznuri.novacode.uz${news.image}`;
-    
-    return {
-      "@context": "https://schema.org",
-      "@type": "NewsArticle",
-      "headline": news.title_uz,
-      "description": news.description_uz.substring(0, 200),
-      "image": imageUrl,
-      "datePublished": news.date,
-      "dateModified": news.date,
-      "author": {
-        "@type": "Organization",
-        "name": "Ko'z Nuri - Eye Medical Center"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Ko'z Nuri - Eye Medical Center",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://koznuri.novacode.uz/logo.svg"
-        }
-      },
-      "mainEntityOfPage": {
-        "@type": "WebPage",
-        "@id": `https://koznuri.novacode.uz/news/${news.uuid}`
-      }
-    };
-  }, [news]);
 
   return (
     <>

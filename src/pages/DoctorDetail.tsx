@@ -52,6 +52,33 @@ const DoctorDetail = () => {
     setIsModalOpen(true);
   };
 
+  const getImageUrl = (image: string): string => {
+    if (image.startsWith("http")) return image;
+    return `https://koznuri.novacode.uz${image}`;
+  };
+
+  // Structured data for doctor
+  const doctorStructuredData = useMemo(() => {
+    if (!localizedDoctor) return null;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "Physician",
+      "name": localizedDoctor.fullName,
+      "description": localizedDoctor.description,
+      "image": getImageUrl(localizedDoctor.image),
+      "medicalSpecialty": "Ophthalmology",
+      "worksFor": {
+        "@type": "MedicalOrganization",
+        "name": "Ko'z Nuri - Eye Medical Center",
+        "url": "https://koznuri.novacode.uz"
+      },
+      "url": `https://koznuri.novacode.uz/doctor/${localizedDoctor.uuid}`,
+      "jobTitle": localizedDoctor.job,
+      "knowsAbout": ["Ophthalmology", "Eye Surgery", "Laser Correction", "Cataract", "Glaucoma"]
+    };
+  }, [localizedDoctor]);
+
   // Loading state
   if (isLoading) {
     return (
@@ -84,33 +111,6 @@ const DoctorDetail = () => {
       </div>
     );
   }
-
-  const getImageUrl = (image: string): string => {
-    if (image.startsWith("http")) return image;
-    return `https://koznuri.novacode.uz${image}`;
-  };
-
-  // Structured data for doctor
-  const doctorStructuredData = useMemo(() => {
-    if (!localizedDoctor) return null;
-    
-    return {
-      "@context": "https://schema.org",
-      "@type": "Physician",
-      "name": localizedDoctor.fullName,
-      "description": localizedDoctor.description,
-      "image": getImageUrl(localizedDoctor.image),
-      "medicalSpecialty": "Ophthalmology",
-      "worksFor": {
-        "@type": "MedicalOrganization",
-        "name": "Ko'z Nuri - Eye Medical Center",
-        "url": "https://koznuri.novacode.uz"
-      },
-      "url": `https://koznuri.novacode.uz/doctor/${localizedDoctor.uuid}`,
-      "jobTitle": localizedDoctor.job,
-      "knowsAbout": ["Ophthalmology", "Eye Surgery", "Laser Correction", "Cataract", "Glaucoma"]
-    };
-  }, [localizedDoctor]);
 
   return (
     <>
