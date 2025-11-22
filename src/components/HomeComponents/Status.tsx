@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useStatistics } from "../../hooks/useStatistics";
 import LoadingSpinner from "../LoadingSpinner";
 import { mapI18nToApiLanguage } from "../../utils/languageMapper";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 const Status = () => {
   const { t, i18n } = useTranslation();
@@ -183,47 +185,62 @@ const Status = () => {
     <section ref={sectionRef} className="md:py-14 lg:py-16 relative">
       <div className="w-full max-w-full overflow-x-hidden">
         <div className="max-w-[1380px] w-full mx-auto py-10  px-4 sm:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-4 xl:gap-6 2xl:gap-8">
-          {sortedStatistics.map((stat, index) => {
-            const content = getLocalizedContent(stat);
-            const currentCount = counts[stat.uuid] || 0;
+          <Swiper
+            spaceBetween={16}
+            slidesPerView={2}
+            autoplay={{
+              delay: 2500,
+              disableOnInteraction: false,
+            }}
+            loop={sortedStatistics.length > 1}
+            breakpoints={{
+              640: { slidesPerView: 2, spaceBetween: 18 },
+              768: { slidesPerView: 3, spaceBetween: 20 },
+              1024: { slidesPerView: 4, spaceBetween: 24 },
+            }}
+            className="status-swiper"
+          >
+            {sortedStatistics.map((stat, index) => {
+              const content = getLocalizedContent(stat);
+              const currentCount = counts[stat.uuid] || 0;
 
-            // Show original value if animation hasn't started or if it's the final value
-            const displayValue =
-              currentCount === 0
-                ? stat.value
-                : formatDisplayValue(stat.value, currentCount);
+              // Show original value if animation hasn't started or if it's the final value
+              const displayValue =
+                currentCount === 0
+                  ? stat.value
+                  : formatDisplayValue(stat.value, currentCount);
 
-            return (
-              <div
-                key={stat.uuid}
-                className="bg-white rounded-2xl p-6 md:p-7 lg:p-5 xl:p-7 2xl:p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                style={{
-                  animationDelay: `${index * 0.1}s`,
-                  animation: isVisible
-                    ? "fadeInUp 0.6s ease-out forwards"
-                    : "none",
-                }}
-              >
-                <div className="text-center">
-                  <h3 className="text-base md:text-[18px] lg:text-base xl:text-lg 2xl:text-xl font-semibold text-gray-800 mb-3 md:mb-4 lg:mb-3 xl:mb-4 leading-tight">
-                    {content.title}
-                  </h3>
+              return (
+                <SwiperSlide key={stat.uuid} className="!h-auto flex">
+                  <div
+                    className="status-card bg-white rounded-2xl p-6 md:p-7 lg:p-5 xl:p-7 2xl:p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center"
+                    style={{
+                      animationDelay: `${index * 0.1}s`,
+                      animation: isVisible
+                        ? "fadeInUp 0.6s ease-out forwards"
+                        : "none",
+                    }}
+                  >
+                    <div className="text-center w-full">
+                      <h3 className="text-base md:text-[18px] lg:text-base xl:text-lg 2xl:text-xl font-semibold text-gray-800 mb-3 md:mb-4 lg:mb-3 xl:mb-4 leading-tight">
+                        {content.title}
+                      </h3>
 
-                  <div className="mb-4">
-                    <span className="text-3xl md:text-4xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-[#1857FE]">
-                      {displayValue}
-                    </span>
+                      <div className="mb-4">
+                        <span className="text-3xl md:text-4xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-[#1857FE]">
+                          {displayValue}
+                        </span>
+                      </div>
+
+                      <p className="text-sm md:text-[16px] lg:text-sm xl:text-base 2xl:text-lg text-[#282828] leading-relaxed">
+                        {content.subtitle}
+                      </p>
+                    </div>
                   </div>
-
-                  <p className="text-sm md:text-[16px] lg:text-sm xl:text-base 2xl:text-lg text-[#282828] leading-relaxed">
-                    {content.subtitle}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
         </div>
       </div>
 
@@ -237,6 +254,26 @@ const Status = () => {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+        .status-swiper {
+          padding-bottom: 12px;
+        }
+        .status-swiper .swiper-wrapper {
+          align-items: stretch;
+        }
+        .status-swiper .swiper-slide {
+          height: auto;
+          display: flex;
+        }
+        .status-card {
+          min-height: 260px;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+          text-align: center;
+          row-gap: 12px;
         }
       `}</style>
     </section>

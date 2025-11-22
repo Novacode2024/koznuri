@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { getAbout } from '../../services/aboutService';
@@ -28,6 +28,8 @@ const imageContainerStyle = {
   borderRadius: '20px',
   opacity: 1,
 };
+
+const MAX_DESCRIPTION_WORDS = 50;
 
 const Info = () => {
   const { t, i18n } = useTranslation();
@@ -108,6 +110,28 @@ const Info = () => {
 
   };
 
+  const descriptionHtml = getDescription();
+
+  const truncatedDescription = useMemo(() => {
+    const sanitized = sanitizeHtml(descriptionHtml);
+    if (!sanitized) return '';
+
+    const normalizedText = sanitized
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const words = normalizedText ? normalizedText.split(' ') : [];
+
+    if (words.length <= MAX_DESCRIPTION_WORDS) {
+      return sanitized;
+    }
+
+    const truncatedText = `${words.slice(0, MAX_DESCRIPTION_WORDS).join(' ')}...`;
+    return sanitizeHtml(truncatedText);
+  }, [descriptionHtml]);
+
   return (
     <section className="py-10 md:py-14 lg:py-12 xl:py-14 2xl:py-16">
       <div className="w-full max-w-full">
@@ -130,7 +154,7 @@ const Info = () => {
                 className="text-[#747474] leading-relaxed text-base md:text-[18px] md:leading-7 lg:text-sm lg:leading-6 xl:text-base xl:leading-7 2xl:text-[18px] 2xl:leading-7"
                 style={textStyle}
               >
-                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(getDescription()) }} />
+                <div dangerouslySetInnerHTML={{ __html: truncatedDescription }} />
               </div>
 
               {/* Details Button */}
