@@ -31,18 +31,22 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// API Response Interface
-interface SocialsResponse {
-  instagram: string | null;
-  telegram: string | null;
-  chat_telegram: string | null;
-  chat_whatsapp: string | null;
-  facebook: string | null;
-  youtube: string | null;
-  linkedin: string | null;
-  whatsapp: string | null;
-  tiktok: string | null;
-}
+const SOCIAL_KEYS = [
+  'facebook',
+  'instagram',
+  'telegram',
+  'youtube',
+  'whatsapp',
+  'linkedin',
+  'tiktok',
+  'chat_telegram',
+  'chat_whatsapp',
+] as const;
+
+type SocialKey = typeof SOCIAL_KEYS[number];
+type LanguageSuffix = 'uz' | 'ru' | 'en' | 'tj' | 'kz' | 'kg';
+type SocialFieldKey = `${SocialKey}_${LanguageSuffix}`;
+type SocialsResponse = Partial<Record<SocialFieldKey, string | null>>;
 
 // Social Link Interface
 interface SocialLink {
@@ -76,6 +80,9 @@ const SOCIAL_ICONS: Record<string, string> = {
   </svg>`,
 };
 
+SOCIAL_ICONS.chat_telegram = SOCIAL_ICONS.telegram;
+SOCIAL_ICONS.chat_whatsapp = SOCIAL_ICONS.whatsapp;
+
 // Social Media Names Mapping
 const SOCIAL_NAMES: Record<string, string> = {
   facebook: 'Facebook',
@@ -85,6 +92,8 @@ const SOCIAL_NAMES: Record<string, string> = {
   whatsapp: 'WhatsApp',
   linkedin: 'LinkedIn',
   tiktok: 'TikTok',
+  chat_telegram: 'Telegram Chat',
+  chat_whatsapp: 'WhatsApp Chat',
 };
 
 const Location = () => {
@@ -97,58 +106,84 @@ const Location = () => {
   const branchMarkersMap = useRef<Map<string, L.Marker>>(new Map());
 
   // Social links state
+  const [socialData, setSocialData] = useState<SocialsResponse | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [socialLinksLoading, setSocialLinksLoading] = useState(true);
 
+  // Resolve i18n language to API suffix
+  const resolveSocialLanguage = useCallback((): LanguageSuffix => {
+    const lang = (i18n.language || 'uz').toLowerCase();
+
+    if (lang === 'kr' || lang.startsWith('uz')) return 'uz';
+    if (lang.startsWith('ru')) return 'ru';
+    if (lang.startsWith('en')) return 'en';
+    if (lang.startsWith('tg') || lang.startsWith('tj')) return 'tj';
+    if (lang.startsWith('kz')) return 'kz';
+    if (lang.startsWith('ky') || lang.startsWith('kg')) return 'kg';
+
+    return 'uz';
+  }, [i18n.language]);
+
   // Fetch social links from API
   useEffect(() => {
+    let isMounted = true;
+
     const fetchSocialLinks = async () => {
       try {
         setSocialLinksLoading(true);
         const data = await api.get<SocialsResponse>('/socials/', { skipAuth: true });
-        
-        // Convert API response to SocialLink array, filtering out null/empty values
-        const links: SocialLink[] = [];
-        
-        // Define the order and keys to process (excluding chat_telegram and chat_whatsapp)
-        const socialKeys: Array<keyof SocialsResponse> = [
-          'facebook',
-          'instagram',
-          'telegram',
-          'youtube',
-          'whatsapp',
-          'linkedin',
-          'tiktok',
-        ];
-
-        // Filter and add only non-null social links
-        socialKeys.forEach((key) => {
-          const url = data[key];
-          // Only add if URL exists and is not empty
-          if (url && typeof url === 'string' && url.trim() !== '') {
-            const icon = SOCIAL_ICONS[key];
-            const name = SOCIAL_NAMES[key];
-            if (icon && name) {
-              links.push({
-                name,
-                url: url.trim(),
-                icon,
-              });
-            }
-          }
-        });
-
-        setSocialLinks(links);
+        if (isMounted) {
+          setSocialData(data);
+        }
       } catch {
-        // Silent fail - social links are optional
-        setSocialLinks([]);
+        if (isMounted) {
+          setSocialData(null);
+          setSocialLinks([]);
+        }
       } finally {
-        setSocialLinksLoading(false);
+        if (isMounted) {
+          setSocialLinksLoading(false);
+        }
       }
     };
 
     fetchSocialLinks();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  useEffect(() => {
+    if (!socialData) {
+      setSocialLinks([]);
+      return;
+    }
+
+    const langKey = resolveSocialLanguage();
+    const localizedLinks: SocialLink[] = [];
+
+    SOCIAL_KEYS.forEach((key) => {
+      const fieldKey = `${key}_${langKey}` as keyof SocialsResponse;
+      const url = socialData[fieldKey];
+      if (typeof url === 'string') {
+        const trimmedUrl = url.trim();
+        if (trimmedUrl) {
+          const icon = SOCIAL_ICONS[key];
+          const name = SOCIAL_NAMES[key];
+          if (icon && name) {
+            localizedLinks.push({
+              name,
+              url: trimmedUrl,
+              icon,
+            });
+          }
+        }
+      }
+    });
+
+    setSocialLinks(localizedLinks);
+  }, [socialData, resolveSocialLanguage]);
 
   // Get localized branch title
   const getBranchTitle = useCallback((branch: BranchMap): string => {
