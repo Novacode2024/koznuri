@@ -42,9 +42,11 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor,  onAppointmentClick }) 
     className = "",
   }) => (
     <div
-      className={`bg-white text-[#1857FE] px-2.5 sm:px-3 py-1 rounded-[5px] shadow-sm ${className}`}
+      className={`self-end flex items-center justify-end bg-white text-[#1857FE] px-2.5 sm:px-3 py-1 rounded-[5px] shadow-sm ml-auto text-right w-fit ${className}`}
     >
-      <span className="text-[11px] sm:text-xs font-medium">{children}</span>
+      <span className="text-[11px] sm:text-xs font-medium text-right whitespace-nowrap">
+        {children}
+      </span>
     </div>
   );
 
