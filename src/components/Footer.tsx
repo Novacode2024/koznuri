@@ -5,6 +5,7 @@ import LogoIcon from '../assets/logo.png';
 import { useCompanyPhones } from '../hooks/useCompanyPhones';
 import { useCompanyAddresses } from '../hooks/useCompanyAddresses';
 import { useCompanyEmail } from '../hooks/useCompanyEmail';
+import { useCompanyInfo } from '../hooks/useCompanyInfo';
 import { useWorkTimes } from '../hooks/useWorkTimes';
 import AppointmentFormModal from './AppointmentFormModal';
 import type { CompanyAddress } from '../services/companyAddressesService';
@@ -137,6 +138,7 @@ const Footer = () => {
   const { data: companyPhones, loading: phonesLoading } = useCompanyPhones();
   const { data: companyAddresses, loading: addressesLoading } = useCompanyAddresses();
   const { data: companyEmail } = useCompanyEmail();
+  const { data: companyInfo } = useCompanyInfo();
   const { data: workTimes, loading: workTimesLoading } = useWorkTimes();
   const navigationLinks: NavigationLink[] = useMemo(
     () => [
@@ -220,18 +222,21 @@ const Footer = () => {
 
   const contactItems: ContactItem[] = useMemo(
     () => {
-      const emailValue = companyEmail?.email || '';
+      const emailValue = companyInfo?.email || companyEmail?.email || '';
+      const phoneValue =
+        companyInfo?.phone || (phoneNumbers.length > 0 ? phoneNumbers[0].phone : '');
+      const whatsappValue = companyInfo?.whatsapp || '';
       
       return [
         {
           icon: <PhoneIcon />,
           label: t('common.phone'),
-          value: '03 5432 1234',
+          value: phoneValue,
         },
         {
           icon: <WhatsAppIcon />,
           label: t('footer.whatsApp'),
-          value: '03 5412 1234',
+          value: whatsappValue,
         },
         {
           icon: <EmailIcon />,
@@ -240,7 +245,7 @@ const Footer = () => {
         },
       ];
     },
-    [t, companyEmail]
+    [t, companyEmail, companyInfo, phoneNumbers]
   );
 
   const footerLinks = useMemo(

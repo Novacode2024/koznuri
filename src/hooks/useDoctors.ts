@@ -11,6 +11,15 @@ export function useDoctors() {
   });
 }
 
+export function useTopDoctors() {
+  return useQuery<Doctor[], Error>({
+    queryKey: ["top-doctors"],
+    queryFn: () => doctorsService.getTopDoctors(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
 // Hook for getting single doctor by UUID
 export function useDoctorById(uuid: string) {
   return useQuery<Doctor, Error>({

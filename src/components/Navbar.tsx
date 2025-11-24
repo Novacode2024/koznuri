@@ -7,11 +7,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { servicesService, type Service } from "../services/servicesService";
 import NavbarMenuRes from "./NavbarMenuRes";
 import ChatWidget from "./ChatWidget";
-import { useWorkTimes } from "../hooks/useWorkTimes";
 import { useCompanyAddresses } from "../hooks/useCompanyAddresses";
+import { useCompanyInfo } from "../hooks/useCompanyInfo";
 import AppointmentFormModal from "./AppointmentFormModal";
 import InterestModal from "./InterestModal";
-import type { WorkTime } from "../services/workTimesService";
 import type { CompanyAddress } from "../services/companyAddressesService";
 
 // Animation variants for clean code organization
@@ -153,7 +152,7 @@ const Navbar = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
-  const { data: workTimes } = useWorkTimes();
+  const { data: companyInfo } = useCompanyInfo();
   const { data: companyAddresses } = useCompanyAddresses();
   // unified icon button styles for mobile
   const iconBtnBase = "rounded-full bg-[#1857FE] text-white flex items-center justify-center border border-[#1857FE]/30 shadow-[0_9px_27px_0_#1857FEAD]";
@@ -203,22 +202,19 @@ const Navbar = () => {
     return langMap[lang] || 'uz';
   }, [i18n.language]);
 
-  // Get first work time and format it for display
+  // Get working hours from company info
   const workTimeDisplay = useMemo(() => {
-    // Check if workTimes is valid array with data
-    if (workTimes && Array.isArray(workTimes) && workTimes.length > 0) {
-      const firstWorkTime = workTimes[0];
-      if (firstWorkTime && firstWorkTime.start_time && firstWorkTime.end_time) {
-        const langKey = `title_${currentLang}` as keyof WorkTime;
-        const title = (firstWorkTime[langKey] as string) || firstWorkTime.title_uz || firstWorkTime.title_ru || firstWorkTime.title_en || '';
-        const time = `${firstWorkTime.start_time} - ${firstWorkTime.end_time}`;
-        return { time: title ? `${title}: ${time}` : time };
-      }
+    if (companyInfo?.start_time && companyInfo?.end_time) {
+      const formatTime = (time: string) =>
+        time.length >= 5 ? time.slice(0, 5) : time;
+      const start = formatTime(companyInfo.start_time);
+      const end = formatTime(companyInfo.end_time);
+      return { time: `${start} - ${end}` };
     }
-    
+
     // Fallback to translation
     return { time: t('common.workSchedule') };
-  }, [workTimes, currentLang, t]);
+  }, [companyInfo, t]);
 
   // Get first address for display
   const firstAddress = useMemo(() => {
@@ -227,6 +223,25 @@ const Navbar = () => {
     }
     return companyAddresses[0] || null;
   }, [companyAddresses]);
+
+  const phoneInfo = useMemo(() => {
+    const fallbackDisplay = "+998 55 514 03 33";
+    const fallbackTel = "+998555140333";
+    const rawPhone = companyInfo?.phone?.trim();
+
+    if (!rawPhone) {
+      return { display: fallbackDisplay, tel: fallbackTel };
+    }
+
+    const tel = rawPhone.startsWith("+")
+      ? rawPhone.replace(/\s+/g, "")
+      : `+${rawPhone.replace(/\s+/g, "")}`;
+
+    return {
+      display: rawPhone,
+      tel,
+    };
+  }, [companyInfo]);
 
   // Get title based on current language
   const getTitle = (address: CompanyAddress | null): string => {
@@ -446,8 +461,8 @@ const Navbar = () => {
                 </motion.div>
                 <div className="min-w-0 flex flex-col justify-center">
                   <h3 className="text-xs lg:text-sm xl:text-base font-bold text-gray-900 mb-0.5 lg:mb-1 truncate">{t("common.callCenter")}</h3>
-                  <a href="tel:+998555140333" className="text-[10px] lg:text-xs xl:text-sm font-semibold text-[#1857FE] hover:text-[#0d47e8] transition-colors whitespace-nowrap">
-                    +998 55 514 03 33
+                  <a href={`tel:${phoneInfo.tel}`} className="text-[10px] lg:text-xs xl:text-sm font-semibold text-[#1857FE] hover:text-[#0d47e8] transition-colors whitespace-nowrap">
+                    {phoneInfo.display}
                   </a>
                 </div>
               </motion.div>

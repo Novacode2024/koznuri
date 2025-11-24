@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../LoadingSpinner';
 import DoctorCard from '../DoctorCard';
-import { useDoctors } from '../../hooks/useDoctors';
+import { useTopDoctors } from '../../hooks/useDoctors';
 import { localizeDoctor, type DoctorLocale, type LocalizedDoctor } from '../../services/doctorsService';
 
 const WhereDoctors = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { data: doctors, isLoading, error } = useDoctors();
+  const { data: doctors, isLoading, error } = useTopDoctors();
   const [itemsPerView, setItemsPerView] = useState(3);
 
   // Determine items per view based on viewport width
