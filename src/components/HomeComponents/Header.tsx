@@ -239,7 +239,7 @@ const Header = () => {
         {displayBanners.map((banner) => (
           <SwiperSlide key={banner.uuid}>
             <motion.div 
-              className="grid grid-cols-1 lg:grid-cols-2  gap-4 sm:gap-6 md:gap-8 lg:gap-10 items-center"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 lg:gap-10 items-start lg:items-stretch"
               key={banner.uuid}
               initial="hidden"
               animate="visible"
@@ -247,7 +247,7 @@ const Header = () => {
             >
               {/* Left Section - Text and Call-to-Action */}
                 <motion.div 
-                className="space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-7 relative z-10 w-full"
+                className="space-y-4 sm:space-y-5 md:space-y-6 lg:space-y-7 p-4 md:p-10 relative z-10 w-full"
                 variants={itemVariants}
               >
                 {/* Title */}
@@ -336,11 +336,11 @@ const Header = () => {
 
               {/* Right Section - Image */}
               <motion.div 
-                className="relative flex justify-center lg:justify-end mt-8 lg:mt-0 w-full"
+                className="relative flex justify-center p-4 md:p-10 lg:justify-end mt-8 lg:mt-0 w-full lg:h-full"
                 variants={imageVariants}
               >
                 <motion.div 
-                  className="relative w-full h-56 md:h-80 lg:h-[480px] rounded-3xl overflow-hidden"
+                  className="relative w-full min-h-[18rem] lg:min-h-0 lg:h-full rounded-3xl overflow-hidden"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
                 >
