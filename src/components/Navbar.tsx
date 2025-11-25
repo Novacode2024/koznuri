@@ -286,9 +286,9 @@ const Navbar = () => {
       <div className="w-full max-w-full overflow-x-hidden">
         <div className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Interest Modal Button - Above ChatWidget */}
-        <div className="fixed bottom-28 right-4  z-40">
+        <div className="fixed bottom-20 right-0 sm:bottom-24 sm:right-2 lg:bottom-28 lg:right-0 z-40">
           <motion.button
-            className="flex items-center justify-center  w-48 h-48   cursor-pointer"
+            className="flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 xl:w-48 xl:h-48 cursor-pointer"
             onClick={() => {
               setIsInterestModalOpen(true);
             }}
