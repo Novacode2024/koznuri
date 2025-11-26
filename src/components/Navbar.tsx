@@ -288,7 +288,7 @@ const Navbar = () => {
         {/* Interest Modal Button - Above ChatWidget */}
         <div className="fixed bottom-20 -right-1 sm:bottom-24 sm:-right-1 lg:bottom-28 lg:-right-1 z-40">
           <motion.button
-            className="flex flex-col items-center gap-0 cursor-pointer px-2 py-3 w-[230px] sm:w-[250px] lg:w-[260px]"
+            className="flex flex-col items-center gap-0 cursor-pointer px-2 py-3 w-[160px] sm:w-[160px] md:w-[200px] lg:w-[260px]"
             onClick={() => {
               setIsInterestModalOpen(true);
             }}
