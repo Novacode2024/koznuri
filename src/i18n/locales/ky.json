@@ -295,7 +295,8 @@
     "location": "Адрес",
     "reviews": "Пикирлер",
     "media": "Медиа",
-    "usageGuide": "Колдонуу китеби"
+    "usageGuide": "Колдонуу китеби",
+    "viewOnMap": "Картада көрүү"
   },
   "dashboard": {
     "title": "Басма панели",

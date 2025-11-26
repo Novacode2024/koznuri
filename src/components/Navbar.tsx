@@ -286,7 +286,7 @@ const Navbar = () => {
       <div className="w-full max-w-full overflow-x-hidden">
         <div className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Interest Modal Button - Above ChatWidget */}
-        <div className="fixed bottom-20 -right-1 sm:bottom-24 sm:-right-1 lg:bottom-28 lg:-right-1 z-40">
+        <div className="fixed bottom-20 -right-2 sm:bottom-24 sm:-right-2 lg:bottom-28 lg:-right-10 z-40">
           <motion.button
             className="flex flex-col items-center gap-0 cursor-pointer px-2 py-3 w-[160px] sm:w-[160px] md:w-[200px] lg:w-[260px]"
             onClick={() => {
@@ -296,10 +296,10 @@ const Navbar = () => {
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             aria-label={t("common.showInterest")}
           >
-            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 xl:w-48 xl:h-48">
+            <div className="w-32 h-32 sm:w-32 sm:h-32 md:w-32 md:h-32 lg:w-44 lg:h-44 xl:w-48 xl:h-48">
               <img src={callcenter} alt="Call Center" className="w-full h-full object-contain" />
             </div>
-            <div className="w-full text-center text-[10px] sm:text-xs text-white px-2 py-2 rounded-l-[20px] bg-gradient-to-r from-[#2196F3] to-[#424867] whitespace-nowrap">
+            <div className="w-full lg:w-[80%] text-center text-[10px] sm:text-xs text-white px-2 py-2 rounded-l-[20px] bg-gradient-to-r from-[#2196F3] to-[#424867] whitespace-nowrap">
               <p className="whitespace-nowrap">{t("common.showInterest")}</p>
             </div>
           </motion.button>

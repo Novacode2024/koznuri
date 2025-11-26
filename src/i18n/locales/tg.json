@@ -295,7 +295,8 @@
     "location": "Манзил",
     "reviews": "Фикрҳо",
     "media": "Медиа",
-    "usageGuide": "Дастур"
+    "usageGuide": "Дастур",
+    "viewOnMap": "Дар харита нигаред"
   },
   "dashboard": {
     "title": "Панели идоракунӣ",

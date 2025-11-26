@@ -298,7 +298,7 @@
     "followUs": "Бизни кузатинг",
     "allRightsReserved": "Барча ҳуқуқлар ҳимояланган",
     "menu": "Меню",
-    "phoneNumbers": "Телефон нумер",
+    "phoneNumbers": "Телефон нoмер",
     "clinicAddresses": "Клиникамиз манзили:",
     "workingHours": "Иш вакти",
     "whatsApp": "Whats app",
@@ -313,7 +313,8 @@
     "location": "Манзил",
     "reviews": "Изохлар",
     "media": "Медия",
-    "usageGuide": "Кулланма"
+    "usageGuide": "Кулланма",
+    "viewOnMap": "Харитада кўриш"
   },
   "dashboard": {
     "title": "Dashboard",

@@ -318,7 +318,8 @@
     "location": "Manzil",
     "reviews": "Izohlar",
     "media": "Media",
-    "usageGuide": "Qo'llanma"
+    "usageGuide": "Qo'llanma",
+    "viewOnMap": "Xaritada ko'rish"
   },
   "dashboard": {
     "title": "Dashboard",

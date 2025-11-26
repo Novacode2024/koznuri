@@ -295,7 +295,8 @@
     "location": "Мекенжай",
     "reviews": "Пікірлер",
     "media": "Медиа",
-    "usageGuide": "Нұсқаулық"
+    "usageGuide": "Нұсқаулық",
+    "viewOnMap": "Картада көру"
   },
   "dashboard": {
     "title": "Басқару панелі",

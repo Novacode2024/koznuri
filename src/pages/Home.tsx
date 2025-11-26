@@ -60,9 +60,11 @@ const Home = () => {
           <Messages />
         </div>
         <FAQ />
-        <Suspense fallback={<LoadingSpinner />}>
-          <Location />
-        </Suspense>
+        <div id="location" className="scroll-mt-20">
+          <Suspense fallback={<LoadingSpinner />}>
+            <Location />
+          </Suspense>
+        </div>
       </div>
     </>
   )

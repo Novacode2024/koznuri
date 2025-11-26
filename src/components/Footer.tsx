@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LogoIcon from '../assets/logo.png';
 import { useCompanyPhones } from '../hooks/useCompanyPhones';
@@ -134,12 +134,31 @@ const FooterLinks = ({ links }: { links: Array<{ href: string; text: string }> }
 // Main Component
 const Footer = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const { data: companyPhones, loading: phonesLoading } = useCompanyPhones();
   const { data: companyAddresses, loading: addressesLoading } = useCompanyAddresses();
   const { data: companyEmail } = useCompanyEmail();
   const { data: companyInfo } = useCompanyInfo();
   const { data: workTimes, loading: workTimesLoading } = useWorkTimes();
+
+  const handleScrollToLocation = useCallback(() => {
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById('location');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById('location');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [location.pathname, navigate]);
   const navigationLinks: NavigationLink[] = useMemo(
     () => [
       { text: t('footer.services'), href: '/services', hasDropdown: false, submenu: [] },
@@ -332,13 +351,23 @@ const Footer = () => {
                   {t('footer.clinicAddresses')}
                 </h3>
                 <div className="space-y-3 md:space-y-4">
-                  <div className="space-y-1 md:space-y-2">
-                    <p className="text-gray-700 text-sm md:text-base font-medium">
-                      {getTitle(companyAddresses[0])}
-                    </p>
-                    <p className="text-gray-700 text-sm md:text-base">
-                      {getAddress(companyAddresses[0])}
-                    </p>
+                  {companyAddresses.slice(0, 3).map((address, idx) => (
+                    <div key={idx} className="space-y-1 md:space-y-2">
+                      <p className="text-gray-700 text-sm md:text-base font-medium">
+                        {getTitle(address)}
+                      </p>
+                      <p className="text-gray-700 text-sm md:text-base">
+                        {getAddress(address)}
+                      </p>
+                    </div>
+                  ))}
+                  <div className="py-2 w-[60%] border-b border-dashed border-[#1857FE]">
+                    <button
+                      onClick={handleScrollToLocation}
+                      className="text-sm md:text-base text-[#1857FE] transition-colors duration-200 hover:text-[#0d47e8] cursor-pointer"
+                    >
+                      {t('footer.viewOnMap')}
+                    </button>
                   </div>
                 </div>
               </div>

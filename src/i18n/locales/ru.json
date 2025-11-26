@@ -305,7 +305,8 @@
     "location": "Местоположение",
     "reviews": "Отзывы",
     "media": "Медиа",
-    "usageGuide": "Руководство"
+    "usageGuide": "Руководство",
+    "viewOnMap": "Посмотреть на карте"
   },
   "dashboard": {
     "title": "Панель управления",
