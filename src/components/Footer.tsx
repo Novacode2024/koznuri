@@ -238,6 +238,15 @@ const Footer = () => {
     return title || workTime.title_uz || workTime.title_ru || workTime.title_en || '';
   };
 
+  // Get phone title based on current language
+  const getPhoneTitle = useCallback((phoneItem: { title_uz?: string; title_kr?: string; title_ru?: string; title_en?: string; title_kz?: string; title_kg?: string; title_tj?: string }): string => {
+    const langKey = `title_${currentLang}` as keyof typeof phoneItem;
+    const title = phoneItem[langKey] as string;
+    
+    // Fallback to other languages if current language not available
+    return title || phoneItem.title_uz || phoneItem.title_kr || phoneItem.title_ru || phoneItem.title_en || '';
+  }, [currentLang]);
+
 
   const contactItems: ContactItem[] = useMemo(
     () => {
@@ -332,8 +341,8 @@ const Footer = () => {
                 </h3>
                 <div className="space-y-1.5 md:space-y-2">
                   {phoneNumbers.map((phoneItem, idx) => (
-                    <div key={idx} className="text-gray-700 text-sm break-words">
-                      <span className="font-medium">{phoneItem.title_uz}</span>
+                    <div key={idx} className="text-gray-700 text-sm md:text-base break-words">
+                      <span className="font-medium">{getPhoneTitle(phoneItem)}</span>
                       <br />
                       <span>{phoneItem.phone}</span>
                     </div>

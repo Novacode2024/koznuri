@@ -12,7 +12,6 @@ import { useCompanyInfo } from "../hooks/useCompanyInfo";
 import AppointmentFormModal from "./AppointmentFormModal";
 import InterestModal from "./InterestModal";
 import type { CompanyAddress } from "../services/companyAddressesService";
-import callcenter from "../assets/callcenter.png";
 // Animation variants for clean code organization
 const animationVariants = {
   // Container animations
@@ -286,22 +285,87 @@ const Navbar = () => {
       <div className="w-full max-w-full overflow-x-hidden">
         <div className="max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Interest Modal Button - Above ChatWidget */}
-        <div className="fixed bottom-20 -right-2 sm:bottom-24 sm:-right-2 lg:bottom-28 lg:-right-10 z-40">
+        <div className="fixed bottom-20 sm:bottom-24 right-4 sm:right-4 z-40">
+          {/* Glow effect wrapper */}
+          <motion.div
+            className="absolute inset-0 rounded-full bg-[#1857FE] opacity-75 blur-xl"
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.5, 0.8, 0.5],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          {/* Pulse ring effect */}
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-[#1857FE]"
+            animate={{
+              scale: [1, 1.5, 1],
+              opacity: [0.6, 0, 0.6],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
           <motion.button
-            className="flex flex-col items-center gap-0 cursor-pointer px-2 py-3 w-[160px] sm:w-[160px] md:w-[200px] lg:w-[260px]"
+            initial={{ scale: 0, opacity: 0, rotate: -180 }}
+            animate={{
+              scale: [1, 1.1, 1],
+              rotate: 0,
+              opacity: 1,
+            }}
+            exit={{ scale: 0, opacity: 0 }}
             onClick={() => {
               setIsInterestModalOpen(true);
             }}
+            className="relative bg-[#1857FE] text-white rounded-full w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shadow-2xl hover:bg-[#0d47e8] active:bg-[#0a3dd4] transition-colors cursor-pointer touch-manipulation border-2 border-white/20"
+            whileHover={{
+              scale: 1.15,
+              boxShadow: "0 0 30px rgba(24, 87, 254, 0.6)",
+            }}
             whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 20,
+              scale: {
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              },
+            }}
             aria-label={t("common.showInterest")}
           >
-            <div className="w-32 h-32 sm:w-32 sm:h-32 md:w-32 md:h-32 lg:w-44 lg:h-44 xl:w-48 xl:h-48">
-              <img src={callcenter} alt="Call Center" className="w-full h-full object-contain" />
-            </div>
-            <div className="w-full lg:w-[80%] text-center text-[10px] sm:text-xs text-white px-2 py-2 rounded-l-[20px] bg-gradient-to-r from-[#2196F3] to-[#424867] whitespace-nowrap">
-              <p className="whitespace-nowrap">{t("common.showInterest")}</p>
-            </div>
+            <motion.div
+              animate={{
+                rotate: [0, 5, -5, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+            </motion.div>
           </motion.button>
         </div>
         <ChatWidget />
