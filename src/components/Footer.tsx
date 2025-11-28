@@ -117,19 +117,6 @@ const NavigationLink = ({ link }: { link: NavigationLink }) => (
   </div>
 );
 
-const FooterLinks = ({ links }: { links: Array<{ href: string; text: string }> }) => (
-  <div className="flex flex-wrap gap-3 md:gap-4">
-    {links.map((link, idx) => (
-      <a
-        key={idx}
-        href={link.href}
-        className="text-sm text-gray-600 hover:text-[#1857FE] transition-colors duration-200 whitespace-nowrap"
-      >
-        {link.text}
-      </a>
-    ))}
-  </div>
-);
 
 // Main Component
 const Footer = () => {
@@ -212,13 +199,13 @@ const Footer = () => {
     return langMap[lang] || 'uz';
   }, [i18n.language]);
 
-  // Get address based on current language
-  const getAddress = useCallback((address: CompanyAddress): string => {
+  // Get address based on current language - only return if exists in current language
+  const getAddress = useCallback((address: CompanyAddress): string | null => {
     const langKey = `address_${currentLang}` as keyof CompanyAddress;
     const addr = address[langKey] as string;
     
-    // Fallback to other languages if current language not available
-    return addr || address.address_uz || address.address_ru || address.address_en || '';
+    // Only return address if it exists in current language, otherwise return null
+    return addr && addr.trim() !== '' ? addr : null;
   }, [currentLang]);
 
   // Get title based on current language
@@ -276,14 +263,6 @@ const Footer = () => {
     [t, companyEmail, companyInfo, phoneNumbers]
   );
 
-  const footerLinks = useMemo(
-    () => [
-      { href: '#', text: t('footer.articles') },
-      { href: '#', text: t('footer.privacy') },
-      { href: '#', text: t('footer.terms') },
-    ],
-    [t]
-  );
 
   return (
     <footer className="bg-[#E9EEFE] py-8  mt-10 md:py-12">
@@ -333,24 +312,39 @@ const Footer = () => {
           </div>
 
           {/* Phone Numbers Column */}
-          {!phonesLoading && phoneNumbers.length > 0 && (
-            <div className="space-y-6 md:space-y-8">
-              <div>
-                <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">
-                  {t('footer.phoneNumbers')}
-                </h3>
-                <div className="space-y-1.5 md:space-y-2">
-                  {phoneNumbers.map((phoneItem, idx) => (
-                    <div key={idx} className="text-gray-700 text-sm md:text-base break-words">
-                      <span className="font-medium">{getPhoneTitle(phoneItem)}</span>
-                      <br />
-                      <span>{phoneItem.phone}</span>
-                    </div>
-                  ))}
+          {!phonesLoading && phoneNumbers.length > 0 && (() => {
+            const filteredPhones = phoneNumbers.filter((phoneItem) => {
+              const langKey = `title_${currentLang}` as keyof typeof phoneItem;
+              const title = phoneItem[langKey] as string;
+              return title && title.trim() !== '';
+            });
+
+            if (filteredPhones.length === 0) return null;
+
+            return (
+              <div className="space-y-6 md:space-y-8">
+                <div>
+                  <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4">
+                    {t('footer.phoneNumbers')}
+                  </h3>
+                  <div className="space-y-1.5 md:space-y-2">
+                    {filteredPhones.map((phoneItem, idx) => {
+                      const phoneTitle = getPhoneTitle(phoneItem);
+                      if (!phoneTitle) return null;
+                      
+                      return (
+                        <div key={idx} className="text-gray-700 text-sm md:text-base break-words">
+                          <span className="font-medium">{phoneTitle}</span>
+                          <br />
+                          <span>{phoneItem.phone}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Right Column - Address & Working Hours */}
           <div className="space-y-6 md:space-y-8">
@@ -360,16 +354,28 @@ const Footer = () => {
                   {t('footer.clinicAddresses')}
                 </h3>
                 <div className="space-y-3 md:space-y-4">
-                  {companyAddresses.slice(0, 3).map((address, idx) => (
-                    <div key={idx} className="space-y-1 md:space-y-2">
-                      <p className="text-gray-700 text-sm md:text-base font-medium">
-                        {getTitle(address)}
-                      </p>
-                      <p className="text-gray-700 text-sm md:text-base">
-                        {getAddress(address)}
-                      </p>
-                    </div>
-                  ))}
+                  {companyAddresses
+                    .filter((address) => {
+                      const langKey = `address_${currentLang}` as keyof CompanyAddress;
+                      const addr = address[langKey] as string;
+                      return addr && addr.trim() !== '';
+                    })
+                    .slice(0, 3)
+                    .map((address, idx) => {
+                      const addressText = getAddress(address);
+                      if (!addressText) return null;
+                      
+                      return (
+                        <div key={idx} className="space-y-1 md:space-y-2">
+                          <p className="text-gray-700 text-sm md:text-base font-medium">
+                            {getTitle(address)}
+                          </p>
+                          <p className="text-gray-700 text-sm md:text-base">
+                            {addressText}
+                          </p>
+                        </div>
+                      );
+                    })}
                   <div className="py-2 w-[60%] border-b border-dashed border-[#1857FE]">
                     <button
                       onClick={handleScrollToLocation}
@@ -412,9 +418,8 @@ const Footer = () => {
               <p className="text-xs md:text-sm text-gray-600 text-center md:text-left">
                 {t('footer.copyright')}
               </p>
-            <FooterLinks links={footerLinks} />
+            </div>
           </div>
-        </div>
         </div>
       </div>
       {/* Appointment Modal */}
