@@ -7,7 +7,7 @@ import {
 } from "../../hooks/useFormValidation";
 import { useApp } from "../../context/AppContext";
 import { useCompanyPhones } from "../../hooks/useCompanyPhones";
-import { doctorsService, type Doctor } from "../../services/doctorsService";
+import { doctorsService, type Doctor, localizeDoctor, type DoctorLocale } from "../../services/doctorsService";
 import { appointmentService } from "../../services/appointmentService";
 import { paymentService } from "../../services/paymentService";
 import PaymentModal from "../PaymentModal";
@@ -132,6 +132,28 @@ export const  AppointmentForm = ({ hideTitle = false, onClose }: AppointmentForm
     };
     return langMap[lang] || "uz";
   }, [i18n.language]);
+
+  // Map i18next language to doctor locale
+  const doctorLocale = useMemo((): DoctorLocale => {
+    const lang = i18n.language;
+    const localeMap: Record<string, DoctorLocale> = {
+      "uz-latin": "uz",
+      "uz-cyrillic": "kr",
+      uz: "uz",
+      ru: "ru",
+      en: "en",
+      tg: "tj",
+      kz: "kz",
+      ky: "kg",
+    };
+    return localeMap[lang] || "uz";
+  }, [i18n.language]);
+
+  // Helper function to get localized doctor name
+  const getLocalizedDoctorName = useCallback((doctor: Doctor): string => {
+    const localized = localizeDoctor(doctor, doctorLocale);
+    return localized.fullName || t("contact.unknownDoctor");
+  }, [doctorLocale, t]);
 
   // Get language for API (same mapping)
   const apiLanguage = useMemo(() => {
@@ -890,7 +912,7 @@ export const  AppointmentForm = ({ hideTitle = false, onClose }: AppointmentForm
             {doctors && Array.isArray(doctors) && doctors.length > 0
               ? doctors.map((doctor) => (
                   <option key={doctor.uuid} value={doctor.uuid}>
-                    {doctor.full_name || t("contact.unknownDoctor")}
+                    {getLocalizedDoctorName(doctor)}
                   </option>
                 ))
               : !doctorsLoading && formData.branch && (

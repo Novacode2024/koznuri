@@ -1,4 +1,4 @@
-import LogoIcon from "../assets/icons/logo.svg";
+import LogoIcon from "../assets/logo.png";
 
 import { NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";

@@ -462,9 +462,9 @@ const ChatWidget = () => {
                   >
                     {t('common.chat.assistant')}
                   </div>
-                  <div className="text-xs sm:text-sm text-white/80 truncate">
+                  {/* <div className="text-xs sm:text-sm text-white/80 truncate">
                     {t('common.chat.assistantName')}
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <button
