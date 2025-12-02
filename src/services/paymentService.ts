@@ -36,19 +36,27 @@ export const paymentService = {
   },
 
   // Create Payme payment
-  createPaymePayment: async (appointmentUuid: string, amount: string): Promise<PaymePaymentResponse> => {
+  createPaymePayment: async (appointmentUuid: string, amount: string, captchaToken?: string | null): Promise<PaymePaymentResponse> => {
     const formData = new FormData();
     formData.append('amount', amount);
     formData.append('appointment', appointmentUuid);
+    
+    if (captchaToken) {
+      formData.append('captcha', captchaToken);
+    }
     
     return api.post<PaymePaymentResponse>('/payment/create/payme/', formData);
   },
 
   // Create Click payment
-  createClickPayment: async (appointmentUuid: string, amount: string): Promise<ClickPaymentResponse> => {
+  createClickPayment: async (appointmentUuid: string, amount: string, captchaToken?: string | null): Promise<ClickPaymentResponse> => {
     const formData = new FormData();
     formData.append('amount', amount);
     formData.append('appointment', appointmentUuid);
+    
+    if (captchaToken) {
+      formData.append('captcha', captchaToken);
+    }
     
     return api.post<ClickPaymentResponse>('/payment/create/click/', formData);
   },

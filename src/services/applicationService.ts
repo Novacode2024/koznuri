@@ -23,13 +23,18 @@ export const applicationService = {
   },
 
   // Create new application
-  createApplication: async (data: Partial<Application>): Promise<Application> => {
+  createApplication: async (data: Partial<Application>, captchaToken?: string | null): Promise<Application> => {
     const formData = new FormData()
     if (data.doctor_uuid) formData.append('doctor_uuid', data.doctor_uuid)
     if (data.service_uuid) formData.append('service_uuid', data.service_uuid)
     if (data.appointment_date) formData.append('appointment_date', data.appointment_date)
     if (data.appointment_time) formData.append('appointment_time', data.appointment_time)
     if (data.message) formData.append('message', data.message)
+    
+    if (captchaToken) {
+      formData.append('captcha', captchaToken)
+    }
+    
     return api.post<Application>('/applications/', formData)
   },
 

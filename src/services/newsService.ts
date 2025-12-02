@@ -109,13 +109,21 @@ export const newsService = {
   },
 
   // Increment views
-  incrementViews: async (id: string): Promise<void> => {
-    await api.post(`/news/${id}/views`);
+  incrementViews: async (id: string, captchaToken?: string | null): Promise<void> => {
+    const formData = new FormData();
+    if (captchaToken) {
+      formData.append('captcha', captchaToken);
+    }
+    await api.post(`/news/${id}/views`, formData);
   },
 
   // Like news
-  likeNews: async (id: string): Promise<{ likes: number }> => {
-    const response = await api.post<{ likes: number }>(`/news/${id}/like`);
+  likeNews: async (id: string, captchaToken?: string | null): Promise<{ likes: number }> => {
+    const formData = new FormData();
+    if (captchaToken) {
+      formData.append('captcha', captchaToken);
+    }
+    const response = await api.post<{ likes: number }>(`/news/${id}/like`, formData);
     return response;
   },
 

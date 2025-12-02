@@ -19,7 +19,7 @@ export interface DoctorAppointmentResponse {
 }
 
 export const doctorAppointmentService = {
-  createDoctorAppointment: async (data: CreateDoctorAppointmentData): Promise<DoctorAppointmentResponse> => {
+  createDoctorAppointment: async (data: CreateDoctorAppointmentData, captchaToken?: string | null): Promise<DoctorAppointmentResponse> => {
     const formData = new FormData()
     
     formData.append('first_name', data.first_name)
@@ -39,6 +39,10 @@ export const doctorAppointmentService = {
       formData.append('time', data.time)
     } else {
       formData.append('time', '')
+    }
+
+    if (captchaToken) {
+      formData.append('captcha', captchaToken)
     }
 
     return api.post<DoctorAppointmentResponse>('/client/doctor-appointments/create/', formData)

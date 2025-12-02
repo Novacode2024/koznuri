@@ -4,6 +4,7 @@ import paymeLogo from "../assets/peyme.png";
 import clickLogo from "../assets/click.jpg";
 import { paymentService } from "../services/paymentService";
 import { useApp } from "../context/AppContext";
+import { useReCaptcha } from "../hooks/useReCaptcha";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useApp();
+  const { getCaptchaToken } = useReCaptcha();
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Get appointment and amount from props or localStorage
@@ -86,10 +88,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 try {
                   setIsProcessing(true);
                   
+                  // Get reCAPTCHA token
+                  const captchaToken = await getCaptchaToken();
+                  
                   // Create Payme payment
                   const paymentResponse = await paymentService.createPaymePayment(
                     currentAppointment,
-                    currentAmount
+                    currentAmount,
+                    captchaToken
                   );
 
                   // Open payment link in new tab
@@ -137,10 +143,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 try {
                   setIsProcessing(true);
                   
+                  // Get reCAPTCHA token
+                  const captchaToken = await getCaptchaToken();
+                  
                   // Create Click payment
                   const paymentResponse = await paymentService.createClickPayment(
                     currentAppointment,
-                    currentAmount
+                    currentAmount,
+                    captchaToken
                   );
 
                   // Open payment link in new tab

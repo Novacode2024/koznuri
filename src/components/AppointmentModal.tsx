@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
 import type { LocalizedDoctor } from "../services/doctorsService";
-import { doctorAppointmentService } from "../services/doctorAppointmentService";
+import { doctorsService } from "../services/doctorsService";
+import { appointmentService } from "../services/appointmentService";
+import { paymentService } from "../services/paymentService";
+import PaymentModal from "./PaymentModal";
+import AuthRequiredModal from "./AuthRequiredModal";
+import { useReCaptcha } from "../hooks/useReCaptcha";
 
 interface AppointmentModalProps {
   doctor: LocalizedDoctor | null;
@@ -27,6 +32,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const { addNotification } = useApp();
+  const { getCaptchaToken } = useReCaptcha();
   const [formData, setFormData] = useState<AppointmentFormData>({
     patientName: "",
     patientPhone: "",
@@ -35,6 +41,12 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     reason: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isAuthRequiredModalOpen, setIsAuthRequiredModalOpen] = useState(false);
+  const [appointmentUuid, setAppointmentUuid] = useState<string>("");
+  const [paymentAmount, setPaymentAmount] = useState<string>("");
+  const [price, setPrice] = useState<string>("");
+  const [priceLoading, setPriceLoading] = useState(false);
 
   // Get current language code for API
   const getApiLanguage = (): string => {
@@ -52,15 +64,67 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     return langMap[lang] || "uz";
   };
 
+  // Fetch doctor price when doctor is available
+  useEffect(() => {
+    const fetchDoctorPrice = async () => {
+      if (!doctor || !doctor.uuid) {
+        setPrice("");
+        return;
+      }
+
+      try {
+        setPriceLoading(true);
+        const priceData = await doctorsService.getDoctorPrice(doctor.uuid);
+        
+        // Handle response - API returns {service_price: "80 000"} or {price: "80 000"}
+        const priceValue = priceData.service_price || priceData.price || "";
+        
+        // Format price if it's a number
+        const formattedPrice = typeof priceValue === 'number' 
+          ? priceValue.toLocaleString('uz-UZ')
+          : priceValue;
+        
+        setPrice(formattedPrice);
+      } catch {
+        setPrice("");
+      } finally {
+        setPriceLoading(false);
+      }
+    };
+
+    fetchDoctorPrice();
+  }, [doctor]);
+
+  // Check authentication when user interacts with form fields
+  const handleFocus = (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      // Open auth required modal
+      setIsAuthRequiredModalOpen(true);
+      // Blur the field to prevent typing
+      e.target.blur();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!doctor || !doctor.uuid) {
+    if (!doctor || !doctor.uuid || !doctor.branch || !doctor.branch.uuid) {
       addNotification({
         type: "error",
         title: t("common.error"),
         message: t("appointment.error") || "Doctor ma'lumotlari topilmadi",
       });
+      return;
+    }
+
+    // Check if user is authenticated
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      // Open auth required modal instead of redirecting
+      setIsAuthRequiredModalOpen(true);
       return;
     }
 
@@ -72,41 +136,82 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     // Clean phone number
     const cleanPhone = formData.patientPhone.trim().replace(/\s+/g, "");
 
-    // Prepare appointment data
+    // Extract date from datetime-local format (YYYY-MM-DDTHH:mm -> YYYY-MM-DD)
+    let appointmentDate = formData.appointmentDate.trim();
+    if (appointmentDate.includes('T')) {
+      appointmentDate = appointmentDate.split('T')[0];
+    }
+
+    // Prepare price - remove spaces and formatting for API
+    const priceValue = price 
+      ? price.replace(/\s+/g, "").replace(/,/g, "") 
+      : undefined;
+
+    // Prepare appointment data for api/client/appointment/create/
     const appointmentData = {
       first_name: firstName,
       last_name: lastName,
-      phone: cleanPhone,
-      date: formData.appointmentDate || "",
-      language: getApiLanguage(),
-      time: formData.appointmentTime || "",
+      branch_uuid: doctor.branch.uuid,
       doctor_uuid: doctor.uuid,
+      phone: cleanPhone,
+      date: appointmentDate,
+      language: getApiLanguage(),
+      price: priceValue,
     };
 
     try {
       setSubmitting(true);
 
-      await doctorAppointmentService.createDoctorAppointment(appointmentData);
+      // Get reCAPTCHA token
+      const captchaToken = await getCaptchaToken();
+
+      // Send appointment data to api/client/appointment/create/
+      const response = await appointmentService.createAppointment(appointmentData, captchaToken);
+
+      // Extract appointment UUID from response
+      const appointmentId = response.appointment || response.uuid || (response.data as { uuid?: string; appointment?: string })?.uuid || (response.data as { uuid?: string; appointment?: string })?.appointment;
+      
+      if (appointmentId) {
+        // Save appointment UUID to localStorage
+        try {
+          localStorage.setItem("currentAppointmentUuid", appointmentId);
+        } catch {
+          // Silent fail
+        }
+        setAppointmentUuid(appointmentId);
+      }
+
+      // Save payment amount to state and localStorage
+      if (priceValue) {
+        setPaymentAmount(priceValue);
+        
+        // Save price to localStorage
+        try {
+          localStorage.setItem("currentAppointmentPrice", priceValue);
+        } catch {
+          // Silent fail
+        }
+      } else {
+        // Clear price from localStorage if no price
+        try {
+          localStorage.removeItem("currentAppointmentPrice");
+        } catch {
+          // Silent fail
+        }
+      }
+
+      // Open payment modal after successful appointment creation
+      setIsPaymentModalOpen(true);
+
+      // Call original onSubmit callback if provided (for backward compatibility)
+      onSubmit(formData);
 
       addNotification({
         type: "success",
         title: t("common.success"),
         message: t("appointment.success") || "Qabul muvaffaqiyatli qo'shildi",
-        duration: 4000, // 4 seconds
+        duration: 4000,
       });
-
-      // Reset form
-      setFormData({
-        patientName: "",
-        patientPhone: "",
-        appointmentDate: "",
-        appointmentTime: "",
-        reason: "",
-      });
-
-      // Call original onSubmit callback if provided
-      onSubmit(formData);
-      onClose();
     } catch (error) {
       const apiError = error as { status?: number; message?: string };
       addNotification({
@@ -116,6 +221,150 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handlePaymeClick = async () => {
+    try {
+      // Get appointment UUID from state or localStorage
+      const currentAppointmentUuid = appointmentUuid || localStorage.getItem("currentAppointmentUuid");
+      // Get price from state, localStorage, or current price
+      const currentAmount = paymentAmount || localStorage.getItem("currentAppointmentPrice") || price.replace(/\s+/g, "").replace(/,/g, "");
+
+      if (!currentAppointmentUuid || !currentAmount) {
+        addNotification({
+          type: "error",
+          title: t("common.error"),
+          message: t("contact.error") || "Ma'lumotlar to'liq emas",
+        });
+        return;
+      }
+
+      // Get reCAPTCHA token
+      const captchaToken = await getCaptchaToken();
+
+      // Create Payme payment
+      const paymentResponse = await paymentService.createPaymePayment(currentAppointmentUuid, currentAmount, captchaToken);
+
+      // Open payment link in new tab
+      if (paymentResponse.payment_link) {
+        window.open(paymentResponse.payment_link, '_blank', 'noopener,noreferrer');
+        addNotification({
+          type: "success",
+          title: t("common.success"),
+          message: t("dashboard.payments.paymentLinkOpened") || "To'lov havolasi ochildi",
+        });
+      } else {
+        addNotification({
+          type: "error",
+          title: t("common.error"),
+          message: t("dashboard.payments.noPaymentUrl") || "To'lov havolasi mavjud emas",
+        });
+      }
+
+      // Reset form after payment link is opened
+      setFormData({
+        patientName: "",
+        patientPhone: "",
+        appointmentDate: "",
+        appointmentTime: "",
+        reason: "",
+      });
+      setPrice("");
+      setAppointmentUuid("");
+      setPaymentAmount("");
+      
+      // Clear localStorage (UUID and Price)
+      try {
+        localStorage.removeItem("currentAppointmentUuid");
+        localStorage.removeItem("currentAppointmentPrice");
+      } catch {
+        // Silent fail
+      }
+
+      // Close modals
+      setIsPaymentModalOpen(false);
+      onClose();
+    } catch (error) {
+      const apiError = error as { status?: number; message?: string };
+      
+      addNotification({
+        type: "error",
+        title: t("common.error"),
+        message: apiError.message || t("contact.error"),
+      });
+    }
+  };
+
+  const handleClickClick = async () => {
+    try {
+      // Get appointment UUID from state or localStorage
+      const currentAppointmentUuid = appointmentUuid || localStorage.getItem("currentAppointmentUuid");
+      // Get price from state, localStorage, or current price
+      const currentAmount = paymentAmount || localStorage.getItem("currentAppointmentPrice") || price.replace(/\s+/g, "").replace(/,/g, "");
+
+      if (!currentAppointmentUuid || !currentAmount) {
+        addNotification({
+          type: "error",
+          title: t("common.error"),
+          message: t("contact.error") || "Ma'lumotlar to'liq emas",
+        });
+        return;
+      }
+
+      // Get reCAPTCHA token
+      const captchaToken = await getCaptchaToken();
+
+      // Create Click payment
+      const paymentResponse = await paymentService.createClickPayment(currentAppointmentUuid, currentAmount, captchaToken);
+
+      // Open payment link in new tab
+      if (paymentResponse.click_link?.payment_url) {
+        window.open(paymentResponse.click_link.payment_url, '_blank', 'noopener,noreferrer');
+        addNotification({
+          type: "success",
+          title: t("common.success"),
+          message: t("dashboard.payments.paymentLinkOpened") || "To'lov havolasi ochildi",
+        });
+      } else {
+        addNotification({
+          type: "error",
+          title: t("common.error"),
+          message: t("dashboard.payments.noPaymentUrl") || "To'lov havolasi mavjud emas",
+        });
+      }
+
+      // Reset form after payment link is opened
+      setFormData({
+        patientName: "",
+        patientPhone: "",
+        appointmentDate: "",
+        appointmentTime: "",
+        reason: "",
+      });
+      setPrice("");
+      setAppointmentUuid("");
+      setPaymentAmount("");
+      
+      // Clear localStorage (UUID and Price)
+      try {
+        localStorage.removeItem("currentAppointmentUuid");
+        localStorage.removeItem("currentAppointmentPrice");
+      } catch {
+        // Silent fail
+      }
+
+      // Close modals
+      setIsPaymentModalOpen(false);
+      onClose();
+    } catch (error) {
+      const apiError = error as { status?: number; message?: string };
+      
+      addNotification({
+        type: "error",
+        title: t("common.error"),
+        message: apiError.message || t("contact.error"),
+      });
     }
   };
 
@@ -170,6 +419,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               onChange={(e) =>
                 setFormData({ ...formData, patientName: e.target.value })
               }
+              onFocus={handleFocus}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1857FE] focus:border-transparent"
               placeholder={t("appointment.patientNamePlaceholder") || "Исмингизни киритинг"}
             />
@@ -186,6 +436,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               onChange={(e) =>
                 setFormData({ ...formData, patientPhone: e.target.value })
               }
+              onFocus={handleFocus}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1857FE] focus:border-transparent"
               placeholder="+998901234567"
             />
@@ -203,6 +454,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, appointmentDate: e.target.value })
                 }
+                onFocus={handleFocus}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1857FE] focus:border-transparent"
                 min={new Date().toISOString().split("T")[0]}
               />
@@ -219,8 +471,25 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, appointmentTime: e.target.value })
                 }
+                onFocus={handleFocus}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1857FE] focus:border-transparent"
               />
+            </div>
+          </div>
+
+          {/* Price Display */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t("contact.visitAmount") || "To'lov summasi"}
+            </label>
+            <div className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-center">
+              <span className="text-gray-700">
+                {priceLoading
+                  ? t("common.loading") || "Юкланмоқда..."
+                  : price
+                  ? `${price} ${t("common.currency") || "so'm"}`
+                  : t("contact.noPriceAvailable") || "Narx mavjud emas"}
+              </span>
             </div>
           </div>
 
@@ -233,6 +502,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               onChange={(e) =>
                 setFormData({ ...formData, reason: e.target.value })
               }
+              onFocus={handleFocus}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1857FE] focus:border-transparent"
               rows={3}
               placeholder={t("appointment.reasonPlaceholder") || "Шикоятингизни ёзинг"}
@@ -258,6 +528,24 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
           </div>
         </form>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onPaymeClick={handlePaymeClick}
+        onClickClick={handleClickClick}
+        appointment={appointmentUuid || localStorage.getItem("currentAppointmentUuid") || undefined}
+        amount={paymentAmount || (price ? price.replace(/\s+/g, "").replace(/,/g, "") : undefined)}
+      />
+
+      {/* Auth Required Modal */}
+      <AuthRequiredModal
+        isOpen={isAuthRequiredModalOpen}
+        onClose={() => setIsAuthRequiredModalOpen(false)}
+        onRegister={onClose}
+        onLogin={onClose}
+      />
     </div>
   );
 };

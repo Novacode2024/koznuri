@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import api from "../services/api";
+import { useReCaptcha } from "../hooks/useReCaptcha";
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   onSuccess,
 }) => {
   const { t, i18n } = useTranslation();
+  const { getCaptchaToken } = useReCaptcha();
   const [formData, setFormData] = useState<ReviewFormData>({
     description: "",
     image: null,
@@ -122,6 +124,11 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
       
       if (formData.image) {
         formDataToSend.append("image", formData.image);
+      }
+
+      const captchaToken = await getCaptchaToken();
+      if (captchaToken) {
+        formDataToSend.append("captcha", captchaToken);
       }
 
       // Use client review-create endpoint

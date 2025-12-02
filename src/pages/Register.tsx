@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import api from '../services/api'
 import type { ApiError } from '../services/api'
 import { useDebounce } from '../hooks/useDebounce'
+import { useReCaptcha } from '../hooks/useReCaptcha'
 
 interface AuthProfile {
   first_name?: string
@@ -128,6 +129,7 @@ const normalizeAuth = (response: RegisterResponse): NormalizedAuth | null => {
 const Register = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { getCaptchaToken } = useReCaptcha()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [age, setAge] = useState('')
@@ -503,6 +505,11 @@ const Register = () => {
         if (calculatedAgeValue !== null && calculatedAgeValue >= 1 && calculatedAgeValue <= 150) {
           formData.append('age', calculatedAgeValue.toString())
         }
+      }
+
+      const captchaToken = await getCaptchaToken()
+      if (captchaToken) {
+        formData.append('captcha', captchaToken)
       }
 
       const response = await api.post<RegisterResponse>('/client/register/', formData)

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import api from '../services/api'
+import { useReCaptcha } from '../hooks/useReCaptcha'
 
 interface AuthProfile {
   first_name?: string
@@ -105,6 +106,7 @@ const normalizeAuth = (res: AuthResponseShape): NormalizedAuth | null => {
 const Login = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { getCaptchaToken } = useReCaptcha()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -123,6 +125,12 @@ const Login = () => {
       const formData = new FormData()
       formData.append('username', username)
       formData.append('password', password)
+      
+      const captchaToken = await getCaptchaToken()
+      if (captchaToken) {
+        formData.append('captcha', captchaToken)
+      }
+      
       const res = await api.post<AuthResponseShape>('/login/', formData)
       const normalized = normalizeAuth(res)
       if (normalized) {

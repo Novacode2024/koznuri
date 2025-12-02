@@ -8,6 +8,7 @@ import type { ApplicationDetailResponse, Bill } from '../types/Application'
 import { useApp } from '../context/AppContext'
 import PaymentModal from '../components/PaymentModal'
 import { paymentService } from '../services/paymentService'
+import { useReCaptcha } from '../hooks/useReCaptcha'
 
 // Icons
 const UserIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
@@ -45,6 +46,7 @@ const ApplicationDetail = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { addNotification } = useApp()
+  const { getCaptchaToken } = useReCaptcha()
   const [data, setData] = useState<ApplicationDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -123,9 +125,12 @@ const ApplicationDetail = () => {
     try {
       setIsPaymentModalOpen(false)
       
+      const captchaToken = await getCaptchaToken()
+      
       const response = await paymentService.createPaymePayment(
         data.appointment.uuid || data.appointment.id || '',
-        selectedBillForPayment.amount
+        selectedBillForPayment.amount,
+        captchaToken
       )
 
       if (response.payment_link) {
@@ -166,9 +171,12 @@ const ApplicationDetail = () => {
     try {
       setIsPaymentModalOpen(false)
       
+      const captchaToken = await getCaptchaToken()
+      
       const response = await paymentService.createClickPayment(
         data.appointment.uuid || data.appointment.id || '',
-        selectedBillForPayment.amount
+        selectedBillForPayment.amount,
+        captchaToken
       )
 
       if (response.click_link?.payment_url) {

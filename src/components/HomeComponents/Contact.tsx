@@ -12,6 +12,7 @@ import { appointmentService } from "../../services/appointmentService";
 import { paymentService } from "../../services/paymentService";
 import PaymentModal from "../PaymentModal";
 import AuthRequiredModal from "../AuthRequiredModal";
+import { useReCaptcha } from "../../hooks/useReCaptcha";
 
 interface AppointmentFormData {
   firstName: string;
@@ -31,6 +32,7 @@ interface AppointmentFormProps {
 
 export const  AppointmentForm = ({ hideTitle = false, onClose }: AppointmentFormProps) => {
   const { t, i18n } = useTranslation();
+  const { getCaptchaToken } = useReCaptcha();
   const { data: branches, loading: branchesLoading } = useCompanyPhones();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [doctorsLoading, setDoctorsLoading] = useState(false);
@@ -538,8 +540,11 @@ export const  AppointmentForm = ({ hideTitle = false, onClose }: AppointmentForm
     try {
       setSubmitting(true);
 
+      // Get reCAPTCHA token
+      const captchaToken = await getCaptchaToken();
+
       // Send appointment data
-      const response = await appointmentService.createAppointment(appointmentData);
+      const response = await appointmentService.createAppointment(appointmentData, captchaToken);
 
       // Extract appointment UUID from response
       const appointmentId = response.appointment || response.uuid || (response.data as { uuid?: string; appointment?: string })?.uuid || (response.data as { uuid?: string; appointment?: string })?.appointment;
@@ -610,8 +615,11 @@ export const  AppointmentForm = ({ hideTitle = false, onClose }: AppointmentForm
         return;
       }
 
+      // Get reCAPTCHA token
+      const captchaToken = await getCaptchaToken();
+
       // Create Payme payment
-      const paymentResponse = await paymentService.createPaymePayment(currentAppointmentUuid, currentAmount);
+      const paymentResponse = await paymentService.createPaymePayment(currentAppointmentUuid, currentAmount, captchaToken);
 
       // Open payment link in new tab
       if (paymentResponse.payment_link) {
@@ -679,8 +687,11 @@ export const  AppointmentForm = ({ hideTitle = false, onClose }: AppointmentForm
         return;
       }
 
+      // Get reCAPTCHA token
+      const captchaToken = await getCaptchaToken();
+
       // Create Click payment
-      const paymentResponse = await paymentService.createClickPayment(currentAppointmentUuid, currentAmount);
+      const paymentResponse = await paymentService.createClickPayment(currentAppointmentUuid, currentAmount, captchaToken);
 
       // Open payment link in new tab
       if (paymentResponse.click_link?.payment_url) {

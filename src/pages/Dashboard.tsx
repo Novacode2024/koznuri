@@ -8,6 +8,7 @@ import { interestsService, type Interest } from '../services/interestsService'
 import { useApp } from '../context/AppContext'
 import { useDebounce } from '../hooks/useDebounce'
 import api, { logout as apiLogout } from '../services/api'
+import { useReCaptcha } from '../hooks/useReCaptcha'
 import type { Application } from '../types/Application'
 import type { Payment } from '../types/Payment'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -109,6 +110,7 @@ const HeartIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
 const Dashboard = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { getCaptchaToken } = useReCaptcha()
   const { addNotification } = useApp()
   const [auth, setAuth] = useState<AuthPayload | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>('profile')
@@ -438,7 +440,9 @@ const Dashboard = () => {
       if (profileForm.username) updateData.username = profileForm.username
       if (profileForm.password) updateData.password = profileForm.password
 
-      const updated = await profileService.updateProfile(updateData)
+      const { getCaptchaToken } = useReCaptcha()
+      const captchaToken = await getCaptchaToken()
+      const updated = await profileService.updateProfile(updateData, captchaToken)
       
       // Update auth state with new profile data
       // Support both new format (flat) and old format (nested profile)

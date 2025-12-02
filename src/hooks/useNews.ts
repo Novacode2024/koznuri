@@ -4,6 +4,7 @@ import {
   News,
   NewsFilters,
 } from "../services/newsService";
+import { useReCaptcha } from "./useReCaptcha";
 
 // Hook for getting all news with pagination
 export function useNews(filters: NewsFilters = {}) {
@@ -65,13 +66,16 @@ export function useRelatedNews(newsId: string, limit: number = 4) {
 // Hook for news actions (like, unlike, increment views)
 export function useNewsActions() {
   const { execute } = useApiCall();
+  const { getCaptchaToken } = useReCaptcha();
 
   const incrementViews = async (id: string) => {
-    return await execute(() => newsService.incrementViews(id));
+    const captchaToken = await getCaptchaToken();
+    return await execute(() => newsService.incrementViews(id, captchaToken));
   };
 
   const likeNews = async (id: string) => {
-    return await execute(() => newsService.likeNews(id));
+    const captchaToken = await getCaptchaToken();
+    return await execute(() => newsService.likeNews(id, captchaToken));
   };
 
   const unlikeNews = async (id: string) => {

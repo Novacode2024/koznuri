@@ -25,7 +25,7 @@ export const profileService = {
   },
 
   // Update profile
-  updateProfile: async (data: ProfileUpdate): Promise<Profile> => {
+  updateProfile: async (data: ProfileUpdate, captchaToken?: string | null): Promise<Profile> => {
     // Prepare FormData - only include fields that are provided
     const formData = new FormData()
     
@@ -48,6 +48,9 @@ export const profileService = {
       formData.append('password', data.password)
     }
 
+    if (captchaToken) {
+      formData.append('captcha', captchaToken)
+    }
 
     // Send FormData with POST method to /client/profile/update/
     // Backend PATCH method ni qo'llab-quvvatlamaydi, shuning uchun POST ishlatamiz

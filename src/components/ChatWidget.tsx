@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { useReCaptcha } from '../hooks/useReCaptcha'
 
 // Types
 interface ChatMessage {
@@ -89,6 +90,7 @@ const formatTime = (locale: string): string => {
 
 const ChatWidget = () => {
   const { t, i18n } = useTranslation()
+  const { getCaptchaToken } = useReCaptcha()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -179,6 +181,11 @@ const ChatWidget = () => {
       formData.append('message', text.trim())
       formData.append('language', i18n.language)
       formData.append('top_k', TOP_K.toString())
+      
+      const captchaToken = await getCaptchaToken()
+      if (captchaToken) {
+        formData.append('captcha', captchaToken)
+      }
 
       // Send request to API with timeout
       let response: Response

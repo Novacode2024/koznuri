@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { interestService, type CreateInterestData } from "../services/interestService";
 import { useApp } from "../context/AppContext";
 import { useFormValidation } from "../hooks/useFormValidation";
+import { useReCaptcha } from "../hooks/useReCaptcha";
 
 interface InterestModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface InterestModalProps {
 const InterestModal: React.FC<InterestModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
   const { addNotification } = useApp();
+  const { getCaptchaToken } = useReCaptcha();
   const [formData, setFormData] = useState<CreateInterestData>({
     full_name: "",
     phone: "",
@@ -100,7 +102,8 @@ const InterestModal: React.FC<InterestModalProps> = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
 
     try {
-      await interestService.createInterest(formData);
+      const captchaToken = await getCaptchaToken();
+      await interestService.createInterest(formData, captchaToken);
 
       addNotification({
         type: "success",
