@@ -440,7 +440,6 @@ const Dashboard = () => {
       if (profileForm.username) updateData.username = profileForm.username
       if (profileForm.password) updateData.password = profileForm.password
 
-      const { getCaptchaToken } = useReCaptcha()
       const captchaToken = await getCaptchaToken()
       const updated = await profileService.updateProfile(updateData, captchaToken)
       
