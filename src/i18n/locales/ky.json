@@ -65,6 +65,7 @@
     "invalidImageType": "Сүрөт файлдарын гана жүктөөгө болот",
     "imageTooLarge": "Сүрөт көлөмү 5MB ашпоосу керек",
     "showInterest": "Оператор менен байланышуу",
+    "submitRequest": "Өтүнүч калтыруу",
     "fullName": "Толук аты",
     "enterFullName": "Толук атыңызды киргизиңиз",
     "phoneFormat": "Формат: +998901234567",

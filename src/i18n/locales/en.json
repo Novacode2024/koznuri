@@ -74,6 +74,7 @@
     "invalidImageType": "Only image files can be uploaded",
     "imageTooLarge": "Image size must not exceed 5MB",
     "showInterest": "Contact Operator",
+    "submitRequest": "Submit Request",
     "fullName": "Full Name",
     "enterFullName": "Enter your full name",
     "phoneFormat": "Format: +998901234567",

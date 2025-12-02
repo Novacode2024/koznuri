@@ -11,6 +11,7 @@ import { useCompanyAddresses } from "../hooks/useCompanyAddresses";
 import { useCompanyInfo } from "../hooks/useCompanyInfo";
 import AppointmentFormModal from "./AppointmentFormModal";
 import InterestModal from "./InterestModal";
+import ContactCommandMenu from "./ContactCommandMenu";
 import type { CompanyAddress } from "../services/companyAddressesService";
 // Animation variants for clean code organization
 const animationVariants = {
@@ -151,6 +152,7 @@ const Navbar = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
+  const [isContactMenuOpen, setIsContactMenuOpen] = useState(false);
   const { data: companyInfo } = useCompanyInfo();
   const { data: companyAddresses } = useCompanyAddresses();
   // unified icon button styles for mobile
@@ -321,7 +323,7 @@ const Navbar = () => {
             }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => {
-              setIsInterestModalOpen(true);
+              setIsContactMenuOpen(!isContactMenuOpen);
             }}
             className="relative bg-[#1857FE] text-white rounded-full w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shadow-2xl hover:bg-[#0d47e8] active:bg-[#0a3dd4] transition-colors cursor-pointer touch-manipulation border-2 border-white/20"
             whileHover={{
@@ -333,39 +335,72 @@ const Navbar = () => {
               type: "spring",
               stiffness: 300,
               damping: 20,
-              scale: {
+              scale: isContactMenuOpen ? {} : {
                 duration: 1.5,
                 repeat: Infinity,
                 ease: "easeInOut",
               },
             }}
-            aria-label={t("common.showInterest")}
+            aria-label={isContactMenuOpen ? t("common.close") : t("common.showInterest")}
           >
-            <motion.div
-              animate={{
-                rotate: [0, 5, -5, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-              </svg>
-            </motion.div>
+            <AnimatePresence mode="wait">
+              {isContactMenuOpen ? (
+                <motion.svg
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </motion.svg>
+              ) : (
+                <motion.div
+                  key="phone"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <motion.div
+                    animate={{
+                      rotate: [0, 5, -5, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.button>
         </div>
         <ChatWidget />
@@ -787,6 +822,12 @@ const Navbar = () => {
       <AppointmentFormModal
         isOpen={isAppointmentModalOpen}
         onClose={() => setIsAppointmentModalOpen(false)}
+      />
+      {/* Contact Command Menu */}
+      <ContactCommandMenu
+        isOpen={isContactMenuOpen}
+        onClose={() => setIsContactMenuOpen(false)}
+        onCallCenterClick={() => setIsInterestModalOpen(true)}
       />
       {/* Interest Modal */}
       <InterestModal
