@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import AllHeader from "../components/AllHeader";
@@ -17,7 +17,9 @@ const ServiceDetail = () => {
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
   
+  // Always call hooks in the same order, regardless of uuid value
   const { data: service, isLoading: isLoadingDetail, error: detailError } = useServiceById(uuid || "");
+  // Always call useServices hook unconditionally to maintain hook order
   const { data: allServices } = useServices();
 
   // Get service locale from i18n language
@@ -51,11 +53,31 @@ const ServiceDetail = () => {
       .slice(0, 8);
   }, [allServices, service, serviceLocale]);
 
-  // Helper function to get image URL
-  const getImageUrl = (image: string): string => {
+  // Helper function to get image URL - use useCallback to ensure stability
+  const getImageUrl = useCallback((image: string): string => {
     if (image.startsWith("http")) return image;
     return `https://koznuri.novacode.uz${image}`;
-  };
+  }, []);
+
+  // Structured data for service - must be called before early returns
+  const serviceStructuredData = useMemo(() => {
+    if (!localizedService) return null;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "MedicalProcedure",
+      "name": localizedService.title,
+      "description": localizedService.description.substring(0, 200),
+      "image": getImageUrl(localizedService.image || ""),
+      "provider": {
+        "@type": "MedicalOrganization",
+        "name": "Ko'z Nuri - Eye Medical Center",
+        "url": "https://koznuri.novacode.uz"
+      },
+      "url": `https://koznuri.novacode.uz/service/${localizedService.uuid}`,
+      "medicalSpecialty": "Ophthalmology"
+    };
+  }, [localizedService, getImageUrl]);
 
   if (isLoadingDetail) {
     return (
@@ -87,26 +109,6 @@ const ServiceDetail = () => {
       </div>
     );
   }
-
-  // Structured data for service
-  const serviceStructuredData = useMemo(() => {
-    if (!localizedService) return null;
-    
-    return {
-      "@context": "https://schema.org",
-      "@type": "MedicalProcedure",
-      "name": localizedService.title,
-      "description": localizedService.description.substring(0, 200),
-      "image": getImageUrl(localizedService.image || ""),
-      "provider": {
-        "@type": "MedicalOrganization",
-        "name": "Ko'z Nuri - Eye Medical Center",
-        "url": "https://koznuri.novacode.uz"
-      },
-      "url": `https://koznuri.novacode.uz/service/${localizedService.uuid}`,
-      "medicalSpecialty": "Ophthalmology"
-    };
-  }, [localizedService]);
 
   return (
     <>

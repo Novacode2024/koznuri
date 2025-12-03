@@ -30,6 +30,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  // Always call hooks in the same order, regardless of props
   const { t, i18n } = useTranslation();
   const { addNotification } = useApp();
   const { getCaptchaToken } = useReCaptcha();
@@ -368,7 +369,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     }
   };
 
-  if (!isOpen || !doctor) return null;
+  // Don't render anything if modal is closed or doctor is not available
+  if (!isOpen || !doctor) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

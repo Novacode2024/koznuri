@@ -146,7 +146,7 @@ const Servis = () => {
                     to={`/service/${service.uuid}`}
                     className="inline-block font-semibold hover:underline transition-all duration-200 text-sm md:text-[15px] text-[#1857FE] hover:text-white group-hover:text-white/80"
                   >
-                    {t('services.bookAppointment')}
+                    {t('common.readMore')}
                   </NavLink>
                 </div>
 
@@ -194,7 +194,7 @@ const Servis = () => {
                       to={`/service/${service.uuid}`}
                       className="inline-block font-semibold hover:underline transition-all duration-200 text-sm md:text-[15px] text-[#1857FE] hover:text-white group-hover:text-white/80"
                     >
-                      {t('services.bookAppointment')}
+                      {t('common.readMore')}
                     </NavLink>
                   </div>
 

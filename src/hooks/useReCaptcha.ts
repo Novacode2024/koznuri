@@ -2,6 +2,7 @@ import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useCallback } from 'react';
 
 export const useReCaptcha = () => {
+  // Always call useGoogleReCaptcha unconditionally to maintain hook order
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const getCaptchaToken = useCallback(async (): Promise<string | null> => {

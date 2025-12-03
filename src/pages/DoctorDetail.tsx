@@ -241,13 +241,15 @@ const DoctorDetail = () => {
           </div>
         </div>
 
-        {/* Appointment Modal */}
-        <AppointmentModal
-          doctor={localizedDoctor}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onSubmit={handleSubmitAppointment}
-        />
+        {/* Appointment Modal - Only render when doctor is available */}
+        {localizedDoctor && (
+          <AppointmentModal
+            doctor={localizedDoctor}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmitAppointment}
+          />
+        )}
       </div>
       </div>
     </>
